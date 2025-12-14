@@ -41,12 +41,14 @@ else
 fi
 
 # Install dependencies if needed
-# We can check if mlx-whisper is installed
-if ! "$PYTHON_EXEC" -c "import mlx_whisper" 2>/dev/null; then
-    echo "Installing mlx-whisper..."
-    "$PIP_EXEC" install mlx-whisper
+
+# Check for transformers (used by transcribe_seamless.py)
+if ! "$PYTHON_EXEC" -c "import transformers" 2>/dev/null; then
+    echo "Installing transformers and related dependencies..."
+    "$PIP_EXEC" install transformers torch sentencepiece accelerate protobuf
 fi
 
+# Check for openai (used by llm_processor.py)
 if ! "$PYTHON_EXEC" -c "import openai" 2>/dev/null; then
     echo "Installing openai..."
     "$PIP_EXEC" install openai
@@ -92,8 +94,8 @@ else
         # Transcribe if txt does not exist
         if [ ! -f "${filename_no_ext}.txt" ]; then
             echo "Transcribing \"$f\"..."
-            # Use the new MLX wrapper script
-            if ! "$PYTHON_EXEC" transcribe_mlx.py "$f"; then
+            # Use the new SeamlessM4T wrapper script
+            if ! "$PYTHON_EXEC" transcribe_seamless.py "$f"; then
                 echo "Error: Audio transcription failed for \"$f\"."
             fi
         else

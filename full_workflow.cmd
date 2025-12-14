@@ -42,7 +42,7 @@ for %%f in (*.wav) do (
     rem Transcribe if txt does not exist
     if not exist "%%~nf.txt" (
         echo Transcribing "%%f"...
-        whisper-ctranslate2 "%%f" --model large-v3 --device cpu --compute_type float32 --batched true --batch_size 4 --language cs --output_format txt --output_dir .
+        python transcribe_seamless.py "%%f"
         if errorlevel 1 (
             echo Error: Audio transcription failed for "%%f".
         )
