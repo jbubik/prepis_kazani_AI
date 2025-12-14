@@ -1,0 +1,6 @@
+*.wav
+*.rtf
+*.txt
+venv/
+TEMP/
+__pycache__/
