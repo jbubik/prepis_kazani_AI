@@ -26,7 +26,7 @@ def convert_txt_to_rtf(txt_file_path, rtf_file_path, video_info=None):
     try:
         # If video_info is not directly passed, try to load it from video_info.json
         if video_info is None:
-            temp_dir = os.environ.get('GEMINI_TEMP_DIR', '.')
+            temp_dir = os.environ.get('TEMP_BASE', '.')
             video_info_path = os.path.join(temp_dir, 'video_info.json')
             if os.path.exists(video_info_path):
                 try:
@@ -90,8 +90,8 @@ def convert_txt_to_rtf(txt_file_path, rtf_file_path, video_info=None):
 
 
         # Write with utf-8, no BOM
-        # Use a temporary file in GEMINI_TEMP_DIR to write, then move it to the final destination
-        temp_dir = os.environ.get('GEMINI_TEMP_DIR', '.')
+        # Use a temporary file in TEMP_BASE to write, then move it to the final destination
+        temp_dir = os.environ.get('TEMP_BASE', '.')
         temp_rtf_file_path = os.path.join(temp_dir, os.path.basename(rtf_file_path) + ".tmp")
 
         with open(temp_rtf_file_path, 'w', encoding='utf-8') as f:

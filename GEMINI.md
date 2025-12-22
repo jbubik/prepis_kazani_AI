@@ -11,7 +11,14 @@ This directory is a workspace for a speech-to-text transcription task. The prima
 *   `extract_yt_data.py`: A Python script that fetches the YouTube channel page, extracts the latest video's title, preacher, place, and date, and saves this information to `video_info.json`.
 *   `video_info.json`: (Temporary file) Stores the extracted video metadata from YouTube.
 *   `youtube.html`: (Temporary file) Stores the downloaded HTML content from the YouTube channel page.
-*   `full_workflow.cmd`: A batch script that orchestrates the entire process, from fetching YouTube data to generating the final RTF for all `.wav` files.
+*   `full_workflow.cmd` / `full_workflow.sh`: Batch/Bash scripts that orchestrate the entire process, from fetching YouTube data to generating the final RTF for all `.wav` files.
+*   `transcribe_whisper.py`: A Python script that uses the `faster-whisper` library to transcribe audio files (default method).
+*   `transcribe_whispermlx.py`: A Python script that uses the `mlx-whisper` library (optimized for Apple Silicon).
+*   `transcribe_seamless.py`: A Python script that uses Facebook's Seamless M4T model for transcription.
+*   `llm_processor.py`: A Python script for processing text using an LLM (requires OpenAI API key).
+*   `README.md`: Main project overview and entry point.
+*   `SETUP_OSX.md`: Setup instructions for macOS users.
+*   `SETUP_WIN.md`: Setup instructions for Windows users.
 
 # Usage
 
@@ -27,7 +34,7 @@ This script will perform the following actions:
 *   Download the YouTube channel page to a temporary directory.
 *   Extract the latest video's title, preacher, event place, and date from the HTML and save it to `video_info.json`.
 *   Iterate through all `*.wav` files in the directory.
-*   Transcribe each `*.wav` file into a `.txt` file using `whisper-ctranslate2` (if the text file doesn't already exist).
-    *   Command: `whisper-ctranslate2 <filename>.wav --model medium --device cpu --compute_type float32 --batched true --batch_size 4 --language cs --output_format txt --output_dir .`
+*   Transcribe each `*.wav` file into a `.txt` file using the selected transcription script (default is `transcribe_whisper.py`).
+    *   Example command (when using whisper): `python transcribe_whisper.py <filename>.wav`
 *   Convert each `.txt` file to an `.rtf` file, prepending the extracted video metadata (sermon title as Header1, preacher as Header2, date and place as Normal text).
 *   Clean up temporary files.

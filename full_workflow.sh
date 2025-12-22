@@ -1,24 +1,33 @@
 #!/bin/bash
 
+# Start timer
+start_time=$(date +%s)
+echo "Workflow started at: $(date)"
+
 BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$BASE_DIR" || exit
 TEMP_BASE="${TMPDIR:-${TMP:-/tmp}}"
-# Remove trailing slash from TEMP_BASE if present to avoid double slashes, though usually harmless
 TEMP_BASE="${TEMP_BASE%/}"
 VENV_DIR="$TEMP_BASE/venv_prepis_kazani_AI"
+TEMP_BASE="$TEMP_BASE/temp_prepis_kazani_AI"
+
+export TEMP_BASE="$TEMP_BASE"
+echo "Using temporary directory: $TEMP_BASE"
+
 PYTHON_CMD="python3.12"
 
-# Set up temporary directory
-if [ -z "$GEMINI_TEMP_DIR" ]; then
-    GEMINI_TEMP_DIR="$TEMP_BASE/TEMP"
+# Transcription method configuration
+# Possible values: "seamless", "whispermlx", "whisper"
+# Default: "whispermlx"
+TRANSCRIBE_METHOD="${TRANSCRIBE_METHOD:-whispermlx}"
+
+# Validate TRANSCRIBE_METHOD
+if [[ "$TRANSCRIBE_METHOD" != "whispermlx" && "$TRANSCRIBE_METHOD" != "seamless" && "$TRANSCRIBE_METHOD" != "whisper" ]]; then
+    echo "Error: Invalid TRANSCRIBE_METHOD '$TRANSCRIBE_METHOD'. Must be 'whispermlx', 'seamless', or 'whisper'."
+    exit 1
 fi
 
-if [ ! -d "$GEMINI_TEMP_DIR" ]; then
-    mkdir -p "$GEMINI_TEMP_DIR"
-fi
-
-export GEMINI_TEMP_DIR
-
-echo "Using temporary directory: $GEMINI_TEMP_DIR"
+echo "Transcription method: $TRANSCRIBE_METHOD"
 
 # --- VENV SETUP ---
 
@@ -32,33 +41,59 @@ if [ -z "$VIRTUAL_ENV" ]; then
     # Use the venv python and pip
     PYTHON_EXEC="$VENV_DIR/bin/python3"
     PIP_EXEC="$VENV_DIR/bin/pip"
-    WHISPER_EXEC="$VENV_DIR/bin/whisper-ctranslate2"
 else
     echo "Using active virtual environment: $VIRTUAL_ENV"
     PYTHON_EXEC="python3"
     PIP_EXEC="pip"
-    WHISPER_EXEC="whisper-ctranslate2"
 fi
 
 # Install dependencies if needed
 
-# Check for transformers (used by transcribe_seamless.py)
-if ! "$PYTHON_EXEC" -c "import transformers" 2>/dev/null; then
-    echo "Installing transformers and related dependencies..."
-    "$PIP_EXEC" install transformers torch sentencepiece accelerate protobuf
+# Transcription specific dependencies
+if [ "$TRANSCRIBE_METHOD" = "seamless" ]; then
+    # Check for transformers (used by transcribe_seamless.py)
+    if ! "$PYTHON_EXEC" -c "import transformers" 2>/dev/null;
+ then
+        echo "Installing transformers and related dependencies..."
+        "$PIP_EXEC" install transformers torch sentencepiece accelerate protobuf
+    fi
+elif [ "$TRANSCRIBE_METHOD" = "whispermlx" ]; then
+    # Check for mlx_whisper (used by transcribe_whispermlx.py)
+    if ! "$PYTHON_EXEC" -c "import mlx_whisper" 2>/dev/null;
+ then
+        echo "Installing mlx_whisper..."
+        "$PIP_EXEC" install mlx_whisper
+    fi
+elif [ "$TRANSCRIBE_METHOD" = "whisper" ]; then
+    # Check for faster-whisper (used by transcribe_whisper.py)
+    if ! "$PYTHON_EXEC" -c "import faster_whisper" 2>/dev/null;
+ then
+        echo "Installing faster-whisper..."
+        "$PIP_EXEC" install faster-whisper
+    fi
 fi
 
 # Check for openai (used by llm_processor.py)
-if ! "$PYTHON_EXEC" -c "import openai" 2>/dev/null; then
+if ! "$PYTHON_EXEC" -c "import openai" 2>/dev/null;
+ then
     echo "Installing openai..."
     "$PIP_EXEC" install openai
 fi
 # ------------------
 
+# Determine transcription script
+if [ "$TRANSCRIBE_METHOD" = "seamless" ]; then
+    TRANSCRIBE_SCRIPT="transcribe_seamless.py"
+elif [ "$TRANSCRIBE_METHOD" = "whispermlx" ]; then
+    TRANSCRIBE_SCRIPT="transcribe_whispermlx.py"
+elif [ "$TRANSCRIBE_METHOD" = "whisper" ]; then
+    TRANSCRIBE_SCRIPT="transcribe_whisper.py"
+fi
+
 # Step 1: Download YouTube HTML
 echo "Downloading YouTube page..."
 # -s: Silent mode, -L: Follow redirects
-if ! curl -s -L "https://www.youtube.com/acvyskov/live" -o "$GEMINI_TEMP_DIR/youtube.html"; then
+if ! curl -s -L "https://www.youtube.com/acvyskov/live" -o "$TEMP_BASE/youtube.html"; then
     echo "Error: Failed to download YouTube HTML."
     exit 1
 fi
@@ -71,7 +106,7 @@ if ! "$PYTHON_EXEC" extract_yt_data.py; then
 fi
 
 # Check if video_info.json was created
-if [ ! -f "$GEMINI_TEMP_DIR/video_info.json" ]; then
+if [ ! -f "$TEMP_BASE/video_info.json" ]; then
     echo "Error: video_info.json was not created."
     exit 1
 fi
@@ -94,8 +129,7 @@ else
         # Transcribe if txt does not exist
         if [ ! -f "${filename_no_ext}.txt" ]; then
             echo "Transcribing \"$f\"..."
-            # Use the new SeamlessM4T wrapper script
-            if ! "$PYTHON_EXEC" transcribe_seamless.py "$f"; then
+            if ! "$PYTHON_EXEC" "$TRANSCRIBE_SCRIPT" "$f"; then
                 echo "Error: Audio transcription failed for \"$f\"."
             fi
         else
@@ -116,4 +150,13 @@ echo "Workflow completed successfully."
 
 # Clean up temporary files
 echo "Cleaning up temporary files..."
-rm -rf "$GEMINI_TEMP_DIR"
+rm -rf "$TEMP_BASE"
+
+# End timer and print duration
+end_time=$(date +%s)
+elapsed=$(( end_time - start_time ))
+hours=$(( elapsed / 3600 ))
+minutes=$(( (elapsed % 3600) / 60 ))
+seconds=$(( elapsed % 60 ))
+echo "Workflow finished at: $(date)"
+printf "Total elapsed time: %02d:%02d:%02d\n" $hours $minutes $seconds

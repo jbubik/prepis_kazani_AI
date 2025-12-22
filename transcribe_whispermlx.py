@@ -31,7 +31,7 @@ def transcribe_audio(audio_file):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python3 transcribe_mlx.py <audio_file>")
+        print("Usage: python3 transcribe_whispermlx.py <audio_file>")
         sys.exit(1)
         
     audio_path = sys.argv[1]

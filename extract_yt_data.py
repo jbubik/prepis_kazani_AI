@@ -52,7 +52,7 @@ def get_latest_video_info(data):
 
 if __name__ == "__main__":
     try:
-        temp_dir = os.environ.get('GEMINI_TEMP_DIR', '.')
+        temp_dir = os.environ.get('TEMP_BASE', '.')
         youtube_html_path = os.path.join(temp_dir, 'youtube.html')
 
         with open(youtube_html_path, 'r', encoding='utf-8') as f:
