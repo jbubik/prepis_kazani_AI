@@ -54,3 +54,19 @@ def process_text_with_openai(text, model="gpt-4o-mini"):
         print(f"An unexpected error occurred with OpenAI API: {e}", file=sys.stderr)
         print("Returning original text.", file=sys.stderr)
         return text
+
+
+# 1) Extract all Bible references sequentially. Output as a JSON array "bible_references" with fields:
+# "book" — name of the book (Czech Ecumenical Translation)
+# "chapter" — chapter number
+# "verses" — verse range as a string
+# "tm_start" and "tm_end" — time stamps from transcript
+# 2) Important: If a quoted reference spans multiple chapters, split it into separate array entries:
+# The first entry covers from the first quoted verse to the last verse of that chapter (should be expressed as a number).
+# The next array entry starts with verse 1 of the next chapter up to the last referenced verse.
+# Continue splitting for all subsequent chapters.
+# 3) Fill in missing chapters and verses if they can be inferred from the quotation.
+# 4) Keep all values as Czech strings.
+# 5) Infer main theme (max 3 words) as "main_theme".
+# 6) Suggest up to 3 keywords best fitting categorization (Easton Bible Dictionary, translated to Czech) as array "keywords".
+# Transcript:
