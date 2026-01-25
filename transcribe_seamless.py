@@ -33,19 +33,30 @@ def transcribe_audio(audio_file):
         # Using chunk_length_s to handle long audio files
         # tgt_lang="ces" sets the target language to Czech
         print("Starting transcription... this may take a while.")
-        result = translator(audio_file, tgt_lang="ces", chunk_length_s=30)
-        
-        text = result["text"].strip()
-        
-        # Cleanup (as seen in app.py)
-        text = text.replace("#err", "")
+        result = translator(audio_file, tgt_lang="ces", chunk_length_s=30, return_timestamps=True)
         
         # Save to file
-        base_name = os.path.splitext(audio_file)[0]
-        output_file = f"{base_name}.txt"
+        base_name = os.path.splitext(audio_file)
+        output_file = f"{base_name[0]}.txt"
         
         with open(output_file, "w", encoding="utf-8") as f:
-            f.write(text)
+            if "chunks" in result:
+                for chunk in result["chunks"]:
+                    start = int(chunk["timestamp"][0]) if chunk["timestamp"][0] is not None else 0
+                    hours = start // 3600
+                    minutes = (start % 3600) // 60
+                    seconds = start % 60
+                    if hours > 0:
+                        timestamp = f"[{hours:02d}:{minutes:02d}:{seconds:02d}]"
+                    else:
+                        timestamp = f"[{minutes:02d}:{seconds:02d}]"
+                    
+                    text = chunk["text"].strip().replace("#err", "")
+                    if text:
+                        f.write(f"{timestamp} {text}\n")
+            else:
+                text = result["text"].strip().replace("#err", "")
+                f.write(text)
             
         print(f"Transcription saved to '{output_file}'")
 
