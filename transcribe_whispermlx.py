@@ -21,7 +21,16 @@ def transcribe_audio(audio_file):
         output_file = f"{base_name}.txt"
         
         with open(output_file, "w", encoding="utf-8") as f:
-            f.write(result["text"].strip())
+            for segment in result["segments"]:
+                start = int(segment["start"])
+                hours = start // 3600
+                minutes = (start % 3600) // 60
+                seconds = start % 60
+                if hours > 0:
+                    timestamp = f"[{hours:02d}:{minutes:02d}:{seconds:02d}]"
+                else:
+                    timestamp = f"[{minutes:02d}:{seconds:02d}]"
+                f.write(f"{timestamp} {segment['text'].strip()}\n")
             
         print(f"Transcription saved to '{output_file}'")
         
