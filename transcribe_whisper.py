@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 from faster_whisper import WhisperModel
 
 def transcribe_audio(audio_file):
@@ -19,10 +20,34 @@ def transcribe_audio(audio_file):
         output_file = f"{file_root}.txt"
         
         print(f"Detected language '{info.language}' with probability {info.language_probability}")
+        if info.duration:
+             print(f"Audio duration: {info.duration:.2f}s")
+
+        last_update_time = time.time()
         
         with open(output_file, "w", encoding="utf-8") as f:
             for segment in segments:
-                f.write(segment.text + "\n")
+                start = int(segment.start)
+                hours = start // 3600
+                minutes = (start % 3600) // 60
+                seconds = start % 60
+                if hours > 0:
+                    timestamp = f"[{hours:02d}:{minutes:02d}:{seconds:02d}]"
+                else:
+                    timestamp = f"[{minutes:02d}:{seconds:02d}]"
+                
+                text = segment.text.strip()
+                f.write(f"{timestamp} {text}\n")
+                
+                # Report progress every 60 seconds
+                if time.time() - last_update_time >= 60:
+                    progress_pct = ""
+                    if info.duration:
+                        pct = (segment.end / info.duration) * 100
+                        progress_pct = f" ({pct:.1f}%)"
+                    
+                    print(f"Progress{progress_pct}: {timestamp} {text}")
+                    last_update_time = time.time()
                 
         if os.path.exists(output_file):
             print(f"Transcription saved to '{output_file}'")
