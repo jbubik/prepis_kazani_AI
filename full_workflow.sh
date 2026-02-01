@@ -13,6 +13,7 @@ TEMP_BASE="$TEMP_BASE/temp_prepis_kazani_AI"
 
 export TEMP_BASE="$TEMP_BASE"
 echo "Using temporary directory: $TEMP_BASE"
+if [ ! -d "$TEMP_BASE" ]; then mkdir "$TEMP_BASE"; fi
 
 PYTHON_CMD="python3.12"
 
@@ -160,3 +161,4 @@ minutes=$(( (elapsed % 3600) / 60 ))
 seconds=$(( elapsed % 60 ))
 echo "Workflow finished at: $(date)"
 printf "Total elapsed time: %02d:%02d:%02d\n" $hours $minutes $seconds
+
