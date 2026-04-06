@@ -41,5 +41,7 @@ The `full_workflow.sh` script automates the process, including setting up a virt
     TRANSCRIBE_METHOD=whisper ./full_workflow.sh
     # or
     TRANSCRIBE_METHOD=seamless ./full_workflow.sh
+    # or
+    TRANSCRIBE_METHOD=canary ./full_workflow.sh
     ```
 

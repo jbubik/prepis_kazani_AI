@@ -13,7 +13,7 @@ if not exist "%TEMP_BASE%" (
 )
 
 rem Transcription method configuration
-rem Possible values: "seamless", "whispermlx", "whisper"
+rem Possible values: "seamless", "whispermlx", "whisper", "canary"
 rem Default: "whisper"
 if "%TRANSCRIBE_METHOD%" == "" (
     set "TRANSCRIBE_METHOD=whisper"
@@ -23,8 +23,10 @@ rem Validate TRANSCRIBE_METHOD
 if not "%TRANSCRIBE_METHOD%" == "whispermlx" (
     if not "%TRANSCRIBE_METHOD%" == "seamless" (
         if not "%TRANSCRIBE_METHOD%" == "whisper" (
-            echo Error: Invalid TRANSCRIBE_METHOD '%TRANSCRIBE_METHOD%'. Must be 'whispermlx', 'seamless', or 'whisper'.
-            goto :eof
+            if not "%TRANSCRIBE_METHOD%" == "canary" (
+                echo Error: Invalid TRANSCRIBE_METHOD '%TRANSCRIBE_METHOD%'. Must be 'whispermlx', 'seamless', 'whisper', or 'canary'.
+                goto :eof
+            )
         )
     )
 )
@@ -95,6 +97,17 @@ if "%TRANSCRIBE_METHOD%" == "seamless" (
              goto :eof
         )
     )
+) else if "%TRANSCRIBE_METHOD%" == "canary" (
+    rem Check for nemo_toolkit (used by transcribe_canary.py)
+    "%PYTHON_EXEC%" -c "import nemo.collections.asr" >NUL 2>&1
+    if errorlevel 1 (
+        echo Installing NeMo toolkit /ASR version/...
+        "%PIP_EXEC%" install nemo_toolkit[asr] Cython
+        if errorlevel 1 (
+             echo Error: Failed to install NeMo toolkit.
+             goto :eof
+        )
+    )
 )
 
 rem Check for openai (used by llm_processor.py)
@@ -115,6 +128,8 @@ if "%TRANSCRIBE_METHOD%" == "seamless" (
     set "TRANSCRIBE_SCRIPT=transcribe_whispermlx.py"
 ) else if "%TRANSCRIBE_METHOD%" == "whisper" (
     set "TRANSCRIBE_SCRIPT=transcribe_whisper.py"
+) else if "%TRANSCRIBE_METHOD%" == "canary" (
+    set "TRANSCRIBE_SCRIPT=transcribe_canary.py"
 )
 
 rem Step 1: Download YouTube HTML

@@ -14,6 +14,7 @@ This directory is a workspace for a speech-to-text transcription task. The prima
 *   `full_workflow.cmd` / `full_workflow.sh`: Batch/Bash scripts that orchestrate the entire process, from fetching YouTube data to generating the final RTF for all `.wav` files.
 *   `transcribe_whisper.py`: A Python script that uses the `faster-whisper` library to transcribe audio files (default method).
 *   `transcribe_whispermlx.py`: A Python script that uses the `mlx-whisper` library (optimized for Apple Silicon).
+*   `transcribe_canary.py`: A Python script that uses NVIDIA's Canary-1B-v2 model for high-accuracy multilingual transcription (SOTA in 2026).
 *   `transcribe_seamless.py`: A Python script that uses Facebook's Seamless M4T model for transcription.
 *   `llm_processor.py`: A Python script for processing text using an LLM (requires OpenAI API key).
 *   `README.md`: Main project overview and entry point.

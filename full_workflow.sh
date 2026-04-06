@@ -18,13 +18,13 @@ if [ ! -d "$TEMP_BASE" ]; then mkdir "$TEMP_BASE"; fi
 PYTHON_CMD="python3.12"
 
 # Transcription method configuration
-# Possible values: "seamless", "whispermlx", "whisper"
+# Possible values: "seamless", "whispermlx", "whisper", "canary"
 # Default: "whispermlx"
 TRANSCRIBE_METHOD="${TRANSCRIBE_METHOD:-whispermlx}"
 
 # Validate TRANSCRIBE_METHOD
-if [[ "$TRANSCRIBE_METHOD" != "whispermlx" && "$TRANSCRIBE_METHOD" != "seamless" && "$TRANSCRIBE_METHOD" != "whisper" ]]; then
-    echo "Error: Invalid TRANSCRIBE_METHOD '$TRANSCRIBE_METHOD'. Must be 'whispermlx', 'seamless', or 'whisper'."
+if [[ "$TRANSCRIBE_METHOD" != "whispermlx" && "$TRANSCRIBE_METHOD" != "seamless" && "$TRANSCRIBE_METHOD" != "whisper" && "$TRANSCRIBE_METHOD" != "canary" ]]; then
+    echo "Error: Invalid TRANSCRIBE_METHOD '$TRANSCRIBE_METHOD'. Must be 'whispermlx', 'seamless', 'whisper', or 'canary'."
     exit 1
 fi
 
@@ -72,6 +72,13 @@ elif [ "$TRANSCRIBE_METHOD" = "whisper" ]; then
         echo "Installing faster-whisper..."
         "$PIP_EXEC" install faster-whisper
     fi
+elif [ "$TRANSCRIBE_METHOD" = "canary" ]; then
+    # Check for nemo_toolkit (used by transcribe_canary.py)
+    if ! "$PYTHON_EXEC" -c "import nemo.collections.asr" 2>/dev/null;
+ then
+        echo "Installing NeMo toolkit (ASR version)..."
+        "$PIP_EXEC" install nemo_toolkit[asr] Cython
+    fi
 fi
 
 # Check for openai (used by llm_processor.py)
@@ -89,6 +96,8 @@ elif [ "$TRANSCRIBE_METHOD" = "whispermlx" ]; then
     TRANSCRIBE_SCRIPT="transcribe_whispermlx.py"
 elif [ "$TRANSCRIBE_METHOD" = "whisper" ]; then
     TRANSCRIBE_SCRIPT="transcribe_whisper.py"
+elif [ "$TRANSCRIBE_METHOD" = "canary" ]; then
+    TRANSCRIBE_SCRIPT="transcribe_canary.py"
 fi
 
 # Step 1: Download YouTube HTML

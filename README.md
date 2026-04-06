@@ -37,6 +37,7 @@ You can switch transcription methods by setting the `TRANSCRIBE_METHOD` environm
 - `whisper` (Default on Windows)
 - `whispermlx` (Default on macOS)
 - `seamless`
+- `canary`
 
 ## File Structure
 

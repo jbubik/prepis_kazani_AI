@@ -38,7 +38,7 @@ By default, the script uses `whisper` (Faster-Whisper). You can change this by s
 set TRANSCRIBE_METHOD=seamless
 .\full_workflow.cmd
 ```
-Supported methods: `whisper`, `seamless`. (Note: `whispermlx` is for macOS only).
+Supported methods: `whisper`, `seamless`, `canary`. (Note: `whispermlx` is for macOS only).
 
 ## Troubleshooting
 
