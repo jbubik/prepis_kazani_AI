@@ -4,9 +4,9 @@ import time
 from faster_whisper import WhisperModel
 
 def transcribe_audio(audio_file):
-    print(f"Transcribing '{audio_file}' using faster-whisper (Large V3)...")
+    print(f"Transcribing '{audio_file}' using faster-whisper (Large V3 Turbo)...")
 
-    model_size = "large-v3"
+    model_size = "large-v3-turbo"
     device = "cpu"
     compute_type = "float32"
     

@@ -3,7 +3,7 @@ import mlx_whisper
 import os
 
 def transcribe_audio(audio_file):
-    print(f"Transcribing '{audio_file}' using MLX Whisper (Large V3)...")
+    print(f"Transcribing '{audio_file}' using MLX Whisper (Large V3 Turbo)...")
     
     # "mlx-community/whisper-large-v3-mlx" is the Hugging Face repo for the MLX-optimized model
     # We can output directly to a file or handle the text here. 
@@ -12,7 +12,7 @@ def transcribe_audio(audio_file):
     try:
         result = mlx_whisper.transcribe(
             audio_file,
-            path_or_hf_repo="mlx-community/whisper-large-v3-mlx",
+            path_or_hf_repo="mlx-community/whisper-large-v3-turbo",
             language="cs"
         )
         
